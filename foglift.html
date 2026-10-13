@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FogLift - Surplus Food Redistribution</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastelPinkBg: '#FFF0F5', /* Pleasant Pastel Pink Background */
+                        pastelPinkCard: '#FFF7F9',
+                        pastelPinkBorder: '#FBCFE8',
+                        pastelTeal: '#99F6E4',
+                        pastelTealDark: '#0D9488',
+                        pastelRose: '#F472B6',
+                        pastelAmber: '#FDE68A',
+                        pastelBlue: '#BAE6FD',
+                        pastelPurple: '#DDD6FE',
+                        pastelGreen: '#A7F3D0',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFF0F5; /* Pleasant pastel pink background */
+            color: #334155;
+        }
+        h1, h2, h3, .font-display { font-family: 'Outfit', sans-serif; }
+        .glass-pastel {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid #FBCFE8;
+            box-shadow: 0 10px 25px -5px rgba(244, 114, 182, 0.1);
+        }
+        .btn-pastel-primary {
+            background-color: #F472B6;
+            color: white;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-pastel-primary:hover {
+            background-color: #EC4899;
+            transform: translateY(-1px);
+        }
+        .btn-pastel-secondary {
+            background-color: #99F6E4;
+            color: #0F766E;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-pastel-secondary:hover {
+            background-color: #5EEAD4;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-pink-200">
+
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-pink-200 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="returnToLogin()">
+                <div class="w-10 h-10 rounded-2xl bg-pink-300 flex items-center justify-center text-pink-700 font-bold shadow-sm">
+                    🌸
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight font-display text-slate-800">FogLift</span>
+                    <span id="userBadge" class="ml-2 text-xs px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 border border-pink-200 font-medium hidden">Role</span>
+                </div>
+            </div>
+
+            <div id="headerActions" class="flex items-center space-x-2 hidden">
+                <span id="orgNameDisplay" class="text-xs font-semibold text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-pink-200">Org: -</span>
+                <button onclick="returnToLogin()" class="px-3 py-1.5 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold transition-all">
+                    Switch Role / Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-5xl mx-auto w-full p-4 sm:p-6 flex flex-col justify-center">
+
+        <div id="screen-login" class="max-w-md mx-auto w-full glass-pastel rounded-3xl p-8 space-y-6 text-center my-auto">
+            <div class="space-y-2">
+                <div class="w-16 h-16 bg-pink-200 text-pink-600 text-3xl rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                    🍱
+                </div>
+                <h1 class="text-3xl font-extrabold font-display text-slate-800">Welcome to FogLift</h1>
+                <p class="text-xs text-slate-500">Connecting surplus edible food directly to hearts in need with pleasant pastel care.</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Organization / User Name</label>
+                    <input type="text" id="loginOrgName" required placeholder="e.g. Hope Community Kitchen / Hotel Taj" class="w-full px-4 py-3 rounded-2xl bg-pink-50/50 border border-pink-200 text-sm focus:outline-none focus:border-pink-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="e.g. contact@organization.org" class="w-full px-4 py-3 rounded-2xl bg-pink-50/50 border border-pink-200 text-sm focus:outline-none focus:border-pink-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">I am participating as a:</label>
+                    <select id="loginRole" required class="w-full px-4 py-3 rounded-2xl bg-pink-50/50 border border-pink-200 text-sm focus:outline-none focus:border-pink-400 font-medium">
+                        <option value="donor">Donor (I have surplus food)</option>
+                        <option value="receiver">Receiver (I need surplus food)</option>
+                        <option value="volunteer">Volunteer (I want to deliver food)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 rounded-2xl btn-pastel-primary font-bold shadow-md shadow-pink-200 text-sm mt-2">
+                    Proceed to Portal ✨
+                </button>
+            </form>
+        </div>
+
+
+        <div id="flow-donor" class="space-y-6 hidden">
+            <!-- DONOR PAGE 1: Upload Surplus Food & View Volunteer -->
+            <div id="donor-page-1" class="space-y-6">
+                <div class="glass-pastel rounded-3xl p-6 sm:p-8 space-y-6">
+                    <div class="border-b border-pink-200 pb-3 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-pink-600">Donor Portal • Page 1 of 3</span>
+                            <h2 class="text-2xl font-black font-display text-slate-800">Enter Surplus Food Details</h2>
+                        </div>
+                        <span class="text-xs bg-pink-100 text-pink-700 px-3 py-1 rounded-full font-bold">Step 1: Upload</span>
+                    </div>
+
+                    <form onsubmit="handleDonorUpload(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Food Name / Item</label>
+                                <input type="text" id="donorFoodName" required placeholder="e.g. Fresh Vegetable Biryani & Sweets" class="w-full px-4 py-2.5 rounded-xl bg-pink-50/50 border border-pink-200 text-sm focus:outline-none focus:border-pink-400">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1">Quantity (Meals / Portions)</label>
+                                <input type="number" id="donorFoodQty" min="1" value="45" required class="w-full px-4 py-2.5 rounded-xl bg-pink-50/50 border border-pink-200 text-sm focus:outline-none focus:border-pink-400">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">Condition of Food</label>
+                            <select id="donorFoodCondition" class="w-full px-4 py-2.5 rounded-xl bg-pink-50/50 border border-pink-200 text-sm focus:outline-none focus:border-pink-400">
+                                <option value="Freshly Cooked (Under 2 hours ago)">Freshly Cooked (Under 2 hours ago)</option>
+                                <option value="Packaged / Sealed Bakery items">Packaged / Sealed Bakery items</option>
+                                <option value="Good Condition (Cooked 2-4 hours ago)">Good Condition (Cooked 2-4 hours ago)</option>
+                            </select>
+                        </div>
+
+                        <div class="p-4 rounded-2xl bg-teal-50 border border-teal-200 text-xs text-teal-800 space-y-1">
+                            <p class="font-bold">🌿 Food Safety Verified</p>
+                            <p>By clicking upload, your surplus will be published for nearby receivers and matched to an available volunteer driver.</p>
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 rounded-2xl bg-pink-400 hover:bg-pink-500 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center space-x-2">
+                            <span>Upload Food & Request Volunteer</span>
+                            <span>📤</span>
+                        </button>
+                    </form>
+
+                    <!-- Assigned Volunteer Section -->
+                    <div id="donorVolunteerCard" class="mt-6 p-5 rounded-2xl bg-purple-50 border border-purple-200 space-y-3 hidden">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase text-purple-700">Allotted Volunteer Driver</span>
+                            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-purple-200 text-purple-800">Assigned</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-300 text-purple-800 flex items-center justify-center font-bold text-lg">🛵</div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm" id="donorVolName">Rahul Sharma (Volunteer #402)</h4>
+                                <p class="text-xs text-slate-500">Contact: +91 98765 43210 • Vehicle: Electric Scooter</p>
+                            </div>
+                        </div>
+                        <button onclick="goToDonorPage2()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition-all">
+                            Jump to Live Location Tracking (Page 2) →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DONOR PAGE 2: Live Location Tracking -->
+            <div id="donor-page-2" class="space-y-6 hidden">
+                <div class="glass-pastel rounded-3xl p-6 sm:p-8 space-y-6">
+                    <div class="border-b border-pink-200 pb-3 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-pink-600">Donor Portal • Page 2 of 3</span>
+                            <h2 class="text-2xl font-black font-display text-slate-800">Volunteer Live Location Tracking</h2>
+                        </div>
+                        <span class="text-xs bg-teal-100 text-teal-800 px-3 py-1 rounded-full font-bold">Step 2: Tracking</span>
+                    </div>
+
+                    <!-- Volunteer Details -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                        <div class="p-3 bg-pink-50 rounded-2xl border border-pink-100">
+                            <span class="text-slate-400 block">Volunteer</span>
+                            <strong class="text-slate-800 font-bold" id="donorTrackVolName">Rahul Sharma</strong>
+                        </div>
+                        <div class="p-3 bg-pink-50 rounded-2xl border border-pink-100">
+                            <span class="text-slate-400 block">Status</span>
+                            <strong class="text-teal-700 font-bold" id="donorTrackStatus">En Route to Pickup</strong>
+                        </div>
+                        <div class="p-3 bg-pink-50 rounded-2xl border border-pink-100">
+                            <span class="text-slate-400 block">Estimated Pickup</span>
+                            <strong class="text-slate-800 font-bold">8 Minutes</strong>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Map -->
+                    <div class="w-full h-64 bg-slate-800 rounded-2xl relative overflow-hidden shadow-inner">
+                        <canvas id="donorTrackingCanvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center justify-between">
+                        <span>Waiting for handover... Once volunteer delivers the food, you will receive an automatic notification.</span>
+                        <button onclick="simHandoverNotification()" class="px-3 py-1.5 rounded-xl bg-amber-400 text-amber-900 font-bold text-xs hover:bg-amber-500">
+                            Simulate Handover Done 🔔
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DONOR PAGE 3: Motivational Thanks & Reward -->
+            <div id="donor-page-3" class="space-y-6 hidden">
+                <div class="glass-pastel rounded-3xl p-6 sm:p-8 space-y-6 text-center">
+                    <div class="space-y-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-pink-600">Donor Portal • Page 3 of 3</span>
+                        <h2 class="text-3xl font-black font-display text-slate-800">You Made a Difference Today! ❤️</h2>
+                        <p class="text-xs text-slate-600 max-w-lg mx-auto">Your generous surplus donation reached hungry families, ensuring no good food goes to waste.</p>
+                    </div>
+
+                    <!-- Picture Showcase of People in Need Saved -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                        <div class="rounded-2xl overflow-hidden bg-pink-100 p-2 shadow-sm border border-pink-200">
+                            <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80" alt="Smiling children receiving food" class="w-full h-32 object-cover rounded-xl" onerror="this.src='https://placehold.co/400x200/F472B6/ffffff?text=Food+Redistributed'">
+                            <span class="text-[11px] font-semibold text-slate-700 block mt-1.5">45 Happy Meals Served</span>
+                        </div>
+                        <div class="rounded-2xl overflow-hidden bg-pink-100 p-2 shadow-sm border border-pink-200">
+                            <img src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&q=80" alt="Community shelter meal" class="w-full h-32 object-cover rounded-xl" onerror="this.src='https://placehold.co/400x200/99F6E4/0F766E?text=Shelter+Care'">
+                            <span class="text-[11px] font-semibold text-slate-700 block mt-1.5">Local Shelter Nourished</span>
+                        </div>
+                        <div class="rounded-2xl overflow-hidden bg-pink-100 p-2 shadow-sm border border-pink-200">
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&q=80" alt="Fresh food basket" class="w-full h-32 object-cover rounded-xl" onerror="this.src='https://placehold.co/400x200/FDE68A/78350F?text=Zero+Waste'">
+                            <span class="text-[11px] font-semibold text-slate-700 block mt-1.5">22.5 kg CO2 Saved</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button onclick="claimRewardModal()" class="px-8 py-4 rounded-2xl btn-pastel-primary font-bold text-base shadow-lg shadow-pink-300 animate-bounce">
+                            🎁 Claim A Reward
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="flow-receiver" class="space-y-6 hidden">
+            <!-- RECEIVER PAGE 1: Available Donors List -->
+            <div id="receiver-page-1" class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-bold text-pink-600 uppercase">Receiver Portal • Page 1 of 2</span>
+                        <h2 class="text-2xl font-black font-display text-slate-800">Available Food Donors</h2>
+                    </div>
+                    <button onclick="renderReceiverDonorList()" class="px-3.5 py-1.5 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-800 text-xs font-bold">Refresh Baskets 🔄</button>
+                </div>
+
+                <div id="receiverDonorCards" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- RECEIVER PAGE 2: Volunteer & Donor Details + Live Tracking -->
+            <div id="receiver-page-2" class="space-y-6 hidden">
+                <div class="glass-pastel rounded-3xl p-6 sm:p-8 space-y-6">
+                    <div class="border-b border-pink-200 pb-3 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-pink-600">Receiver Portal • Page 2 of 2</span>
+                            <h2 class="text-2xl font-black font-display text-slate-800">Live Delivery Tracking</h2>
+                        </div>
+                        <span class="text-xs bg-teal-100 text-teal-800 px-3 py-1 rounded-full font-bold">In Transit</span>
+                    </div>
+
+                    <!-- Details of Donor and Volunteer -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                        <div class="p-4 bg-pink-50/80 rounded-2xl border border-pink-100 space-y-1">
+                            <span class="text-pink-600 font-bold uppercase text-[10px]">Donor Information</span>
+                            <h4 class="font-bold text-slate-800 text-sm" id="recTrackDonorName">Taj Banquet Hall</h4>
+                            <p class="text-slate-600" id="recTrackItems">50 Portions Fresh Biryani</p>
+                        </div>
+                        <div class="p-4 bg-teal-50/80 rounded-2xl border border-teal-100 space-y-1">
+                            <span class="text-teal-700 font-bold uppercase text-[10px]">Assigned Volunteer</span>
+                            <h4 class="font-bold text-slate-800 text-sm" id="recTrackVolName">Rahul Sharma (Driver)</h4>
+                            <p class="text-slate-600">Vehicle: EV Scooter • ETA: 12 mins</p>
+                        </div>
+                    </div>
+
+                    <!-- Live Map -->
+                    <div class="w-full h-64 bg-slate-800 rounded-2xl relative overflow-hidden shadow-inner">
+                        <canvas id="receiverTrackingCanvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <button onclick="handlePackageReceived()" class="w-full py-4 rounded-2xl bg-teal-500 hover:bg-teal-600 text-white font-bold text-sm shadow-md transition-all">
+                        📦 Package Received
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="flow-volunteer" class="space-y-6 hidden">
+            <div class="glass-pastel rounded-3xl p-6 sm:p-8 space-y-6">
+                <div class="border-b border-pink-200 pb-3 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs font-bold text-purple-600 uppercase">Volunteer Portal</span>
+                        <h2 class="text-2xl font-black font-display text-slate-800">Available Deliveries</h2>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-bold">Active Driver</span>
+                </div>
+
+                <div id="volunteerDeliveryList" class="space-y-4">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <!-- Active Map & Actions after accepting -->
+                <div id="volunteerActivePanel" class="mt-6 space-y-4 pt-6 border-t border-pink-200 hidden">
+                    <h3 class="font-bold text-slate-800 text-base">Active Route & Location Sharing</h3>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="shareLocationWithBoth()" class="px-4 py-2 rounded-xl bg-purple-200 hover:bg-purple-300 text-purple-900 font-bold text-xs transition-all">
+                            📍 Share Live Location to Donor & Receiver
+                        </button>
+                    </div>
+
+                    <div class="w-full h-60 bg-slate-800 rounded-2xl overflow-hidden">
+                        <canvas id="volunteerMapCanvas" class="w-full h-full block"></canvas>
+                    </div>
+
+                    <button onclick="handleMarkDelivered()" class="w-full py-3.5 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md">
+                        ✅ Mark as Delivered & Notify Donor
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="popupModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm hidden px-4">
+        <div class="glass-pastel rounded-3xl p-6 max-w-sm w-full text-center space-y-4 border-2 border-pink-300 shadow-2xl">
+            <div class="w-14 h-14 bg-pink-200 text-pink-700 text-2xl rounded-2xl flex items-center justify-center mx-auto">
+                💖
+            </div>
+            <h3 class="font-display font-extrabold text-xl text-slate-800" id="modalTitle">Notice</h3>
+            <p class="text-xs text-slate-600 leading-relaxed" id="modalBody">Notification content goes here.</p>
+            <button onclick="closeModal()" class="w-full py-3 rounded-xl btn-pastel-primary font-bold text-xs">
+                Awesome! ✨
+            </button>
+        </div>
+    </div>
+
+    <footer class="py-4 px-4 border-t border-pink-200 bg-white/60 text-center text-xs text-slate-500">
+        <p>© 2026 FogLift Initiative. Pleasant pastel food redistribution network.</p>
+    </footer>
+
+    <script>
+        /* --- STATE MANAGEMENT --- */
+        let currentUser = {
+            orgName: '',
+            email: '',
+            role: '' /* 'donor', 'receiver', 'volunteer' */
+        };
+
+        // Shared Food Baskets Database
+        let foodBaskets = [
+            {
+                id: 'BASKET-1',
+                donor: 'Taj Hotel Banquets',
+                items: '50 Portions Vegetable Biryani',
+                qty: 50,
+                condition: 'Freshly Cooked (Under 2 hours ago)',
+                status: 'ready', /* 'ready', 'accepted', 'in_transit', 'delivered' */
+                assignedVolunteer: 'Rahul Sharma (EV Scooter)',
+                receiver: 'Hope Shelter NGO'
+            },
+            {
+                id: 'BASKET-2',
+                donor: 'Bikanervala Bakery',
+                items: '30 Assorted Rolls & Bread Baskets',
+                qty: 30,
+                condition: 'Packaged / Sealed Bakery items',
+                status: 'ready',
+                assignedVolunteer: 'Priya Verma (Bicycle)',
+                receiver: 'Sunshine Orphanage'
+            }
+        ];
+
+        let activeAcceptedBasket = null;
+
+        /* --- INITIALIZATION --- */
+        window.onload = function() {
+            renderReceiverDonorList();
+            renderVolunteerList();
+        };
+
+        /* --- LOGIN & ROLE SELECTION --- */
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            currentUser.orgName = document.getElementById('loginOrgName').value;
+            currentUser.email = document.getElementById('loginEmail').value;
+            currentUser.role = document.getElementById('loginRole').value;
+
+            // Update UI
+            document.getElementById('orgNameDisplay').innerText = `Org: ${currentUser.orgName}`;
+            document.getElementById('headerActions').classList.remove('hidden');
+            
+            const badge = document.getElementById('userBadge');
+            badge.innerText = currentUser.role.toUpperCase();
+            badge.classList.remove('hidden');
+
+            document.getElementById('screen-login').classList.add('hidden');
+
+            // Hide all flows first
+            document.getElementById('flow-donor').classList.add('hidden');
+            document.getElementById('flow-receiver').classList.add('hidden');
+            document.getElementById('flow-volunteer').classList.add('hidden');
+
+            // Route according to chosen role
+            if (currentUser.role === 'donor') {
+                document.getElementById('flow-donor').classList.remove('hidden');
+                showDonorPage(1);
+            } else if (currentUser.role === 'receiver') {
+                document.getElementById('flow-receiver').classList.remove('hidden');
+                showReceiverPage(1);
+                renderReceiverDonorList();
+            } else if (currentUser.role === 'volunteer') {
+                document.getElementById('flow-volunteer').classList.remove('hidden');
+                renderVolunteerList();
+            }
+        }
+
+        function returnToLogin() {
+            document.getElementById('screen-login').classList.remove('hidden');
+            document.getElementById('flow-donor').classList.add('hidden');
+            document.getElementById('flow-receiver').classList.add('hidden');
+            document.getElementById('flow-volunteer').classList.add('hidden');
+            document.getElementById('headerActions').classList.add('hidden');
+            document.getElementById('userBadge').classList.add('hidden');
+        }
+
+        /* --- DONOR WORKFLOW --- */
+        function showDonorPage(pageNum) {
+            document.getElementById('donor-page-1').classList.toggle('hidden', pageNum !== 1);
+            document.getElementById('donor-page-2').classList.toggle('hidden', pageNum !== 2);
+            document.getElementById('donor-page-3').classList.toggle('hidden', pageNum !== 3);
+
+            if (pageNum === 2) {
+                initTrackingCanvas('donorTrackingCanvas');
+            }
+        }
+
+        function handleDonorUpload(e) {
+            e.preventDefault();
+            const foodName = document.getElementById('donorFoodName').value;
+            const qty = document.getElementById('donorFoodQty').value;
+            const condition = document.getElementById('donorFoodCondition').value;
+
+            const newBasket = {
+                id: 'BASKET-' + Math.floor(Math.random() * 900 + 100),
+                donor: currentUser.orgName || 'Anonymous Donor',
+                items: `${qty} Portions ${foodName}`,
+                qty: qty,
+                condition: condition,
+                status: 'ready',
+                assignedVolunteer: 'Rahul Sharma (Volunteer #402)',
+                receiver: 'Awaiting Receiver'
+            };
+
+            foodBaskets.unshift(newBasket);
+            activeAcceptedBasket = newBasket;
+
+            document.getElementById('donorVolName').innerText = newBasket.assignedVolunteer;
+            document.getElementById('donorVolunteerCard').classList.remove('hidden');
+
+            showPopup("Food Uploaded!", `Your surplus food "${foodName}" has been listed. Volunteer ${newBasket.assignedVolunteer} has been allotted!`);
+        }
+
+        function goToDonorPage2() {
+            if (activeAcceptedBasket) {
+                document.getElementById('donorTrackVolName').innerText = activeAcceptedBasket.assignedVolunteer;
+            }
+            showDonorPage(2);
+        }
+
+        function simHandoverNotification() {
+            showPopup("🔔 Handover Notification", "Volunteer has picked up and delivered the food to the receiver! Thank you!");
+            setTimeout(() => {
+                showDonorPage(3);
+            }, 1000);
+        }
+
+        function claimRewardModal() {
+            showPopup("🎁 Reward Claimed!", "Thanks for satisfying our hunger! You have earned 50 Community Impact Points and a Certificate of Appreciation!");
+        }
+
+        /* --- RECEIVER WORKFLOW --- */
+        function showReceiverPage(pageNum) {
+            document.getElementById('receiver-page-1').classList.toggle('hidden', pageNum !== 1);
+            document.getElementById('receiver-page-2').classList.toggle('hidden', pageNum !== 2);
+
+            if (pageNum === 2) {
+                initTrackingCanvas('receiverTrackingCanvas');
+            }
+        }
+
+        function renderReceiverDonorList() {
+            const container = document.getElementById('receiverDonorCards');
+            if (!container) return;
+
+            const available = foodBaskets.filter(b => b.status === 'ready');
+            if (available.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-10 text-slate-400 font-medium">No active donor baskets available right now.</div>`;
+                return;
+            }
+
+            container.innerHTML = available.map(b => `
+                <div class="glass-pastel rounded-2xl p-5 space-y-3 border border-pink-200">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs px-2.5 py-1 rounded-full bg-pink-100 text-pink-700 font-bold">${b.condition}</span>
+                        <span class="text-xs text-teal-700 font-bold font-mono">${b.id}</span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg">${b.donor}</h3>
+                    <p class="text-xs text-slate-600">${b.items}</p>
+                    <div class="pt-2 border-t border-pink-100 flex justify-between items-center">
+                        <span class="text-xs font-bold text-pink-600">${b.qty} Portions</span>
+                        <button onclick="acceptDonorBasket('${b.id}')" class="px-4 py-2 rounded-xl bg-pink-400 hover:bg-pink-500 text-white font-bold text-xs shadow-sm">
+                            Accept Donor 💖
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function acceptDonorBasket(id) {
+            const basket = foodBaskets.find(b => b.id === id);
+            if (!basket) return;
+
+            basket.status = 'accepted';
+            basket.receiver = currentUser.orgName || 'Community Shelter';
+            activeAcceptedBasket = basket;
+
+            showPopup("Request Accepted! 🎉", `Your request was accepted by ${basket.donor}. Click "Access Live Tracking" to see the volunteer route.`);
+            
+            // Re-render list and add action
+            renderReceiverDonorList();
+
+            setTimeout(() => {
+                document.getElementById('recTrackDonorName').innerText = basket.donor;
+                document.getElementById('recTrackItems').innerText = basket.items;
+                document.getElementById('recTrackVolName').innerText = basket.assignedVolunteer;
+                showReceiverPage(2);
+            }, 1200);
+        }
+
+        function handlePackageReceived() {
+            showPopup("Package Received! 📦", "Thank you for confirming receipt. A notification has been dispatched to the donor!");
+            if (activeAcceptedBasket) {
+                activeAcceptedBasket.status = 'delivered';
+            }
+            setTimeout(() => {
+                showReceiverPage(1);
+            }, 1500);
+        }
+
+        /* --- VOLUNTEER WORKFLOW --- */
+        function renderVolunteerList() {
+            const container = document.getElementById('volunteerDeliveryList');
+            if (!container) return;
+
+            const tasks = foodBaskets.filter(b => b.status === 'ready' || b.status === 'accepted');
+
+            if (tasks.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 font-medium">No pending deliveries right now.</div>`;
+                return;
+            }
+
+            container.innerHTML = tasks.map(b => `
+                <div class="p-4 rounded-2xl bg-white/80 border border-purple-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-bold">${b.id}</span>
+                            <span class="text-xs font-bold text-slate-700">Donor: ${b.donor}</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium">${b.items} → Receiver: ${b.receiver}</p>
+                    </div>
+                    <button onclick="acceptVolunteerDelivery('${b.id}')" class="px-4 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-600 text-white font-bold text-xs shadow-sm">
+                        Accept Delivery 🛵
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function acceptVolunteerDelivery(id) {
+            const basket = foodBaskets.find(b => b.id === id);
+            if (!basket) return;
+
+            basket.status = 'in_transit';
+            activeAcceptedBasket = basket;
+
+            showPopup("Delivery Accepted!", `You have accepted delivery for ${basket.donor}. You can now share your location.`);
+            document.getElementById('volunteerActivePanel').classList.remove('hidden');
+            initTrackingCanvas('volunteerMapCanvas');
+        }
+
+        function shareLocationWithBoth() {
+            showPopup("Location Shared 📍", "Your live GPS coordinates have been broadcasted to both the Donor and Receiver.");
+        }
+
+        function handleMarkDelivered() {
+            if (activeAcceptedBasket) {
+                activeAcceptedBasket.status = 'delivered';
+            }
+            showPopup("Marked as Delivered! ✅", "The donor has been notified of the successful delivery. Great job!");
+            document.getElementById('volunteerActivePanel').classList.add('hidden');
+            renderVolunteerList();
+        }
+
+        /* --- CANVAS MAP TRACKING ANIMATION --- */
+        function initTrackingCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+
+            let step = 0;
+
+            function animateMap() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Grid lines (pastel style on dark map)
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += 40) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += 40) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+                }
+
+                // Points: Donor (Left) -> Receiver (Right)
+                const donorX = 60, donorY = canvas.height / 2;
+                const recX = canvas.width - 60, recY = canvas.height / 2;
+
+                // Route Line
+                ctx.beginPath();
+                ctx.moveTo(donorX, donorY);
+                ctx.lineTo(recX, recY);
+                ctx.strokeStyle = '#F472B6';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 6]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Donor Pin
+                ctx.beginPath();
+                ctx.arc(donorX, donorY, 12, 0, Math.PI * 2);
+                ctx.fillStyle = '#99F6E4'; ctx.fill();
+                ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2; ctx.stroke();
+
+                // Receiver Pin
+                ctx.beginPath();
+                ctx.arc(recX, recY, 12, 0, Math.PI * 2);
+                ctx.fillStyle = '#FDE68A'; ctx.fill();
+                ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2; ctx.stroke();
+
+                // Moving Volunteer Pin
+                step = (step + 0.005) % 1;
+                const currentX = donorX + (recX - donorX) * step;
+                const currentY = donorY;
+
+                ctx.beginPath();
+                ctx.arc(currentX, currentY, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#F472B6'; ctx.fill();
+                ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 3; ctx.stroke();
+
+                requestAnimationFrame(animateMap);
+            }
+
+            animateMap();
+        }
+
+        /* --- UTILITY MODALS --- */
+        function showPopup(title, body) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = body;
+            document.getElementById('popupModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('popupModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
